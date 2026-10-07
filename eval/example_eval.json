@@ -1,0 +1,1 @@
+[{"expected_keywords":["axiom","test-time training","device"],"question":"What does the Axiom engine do?"},{"expected_keywords":["retriever","citations","embeddings"],"question":"How does retrieval augmented generation work?"},{"expected_keywords":["offline","no api keys"],"question":"Does the system need API keys?"}]
