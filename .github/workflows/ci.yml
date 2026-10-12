@@ -31,9 +31,15 @@ jobs:
       - name: Build
         run: cargo build --locked --verbose
 
-      - name: Build axiom-agent-task (AXIOM-AETHER)
+      - name: Build axiom-agent-task (AXIOM-AETHER, pinned)
+        env:
+          # Pinned so this repo's CI does not depend on whatever is on
+          # AXIOM-AETHER main that day. Bump deliberately.
+          AXIOM_AETHER_SHA: 87ea1f35ebb485e1b84073f5650d83b3dd4c83de
         run: |
-          git clone --depth 1 https://github.com/fernandogarzaaa/AXIOM-AETHER /tmp/axiom-aether
+          git init -q /tmp/axiom-aether
+          git -C /tmp/axiom-aether fetch -q --depth 1 https://github.com/fernandogarzaaa/AXIOM-AETHER "$AXIOM_AETHER_SHA"
+          git -C /tmp/axiom-aether checkout -q FETCH_HEAD
           cargo build --bin axiom-agent-task --manifest-path /tmp/axiom-aether/axiom_engine_rs/Cargo.toml
 
       - name: Test (including improve loop against the real binary)
