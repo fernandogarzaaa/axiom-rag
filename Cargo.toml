@@ -1,6 +1,6 @@
 [package]
 name = "axiom-rag"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Agentic RAG with verifier-gated retrieval loops. Zero API keys, fully offline."
 license = "MIT"

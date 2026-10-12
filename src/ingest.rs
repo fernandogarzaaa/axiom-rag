@@ -35,12 +35,7 @@ pub fn load_document(path: &Path) -> io::Result<Document> {
             strip_code_fences(&raw)
         }
         "txt" | "text" => String::from_utf8_lossy(&fs::read(path)?).into_owned(),
-        "pdf" => pdf_extract::extract_text(path).map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("pdf extract failed: {e}"),
-            )
-        })?,
+        "pdf" => extract_pdf(path)?,
         other => {
             return Err(io::Error::new(
                 io::ErrorKind::Unsupported,
@@ -53,6 +48,24 @@ pub fn load_document(path: &Path) -> io::Result<Document> {
         text,
         kind: ext,
     })
+}
+
+/// Extract PDF text. `pdf-extract` can panic on malformed PDFs; a panic is
+/// caught and turned into an `InvalidData` error so one bad file cannot
+/// abort the whole process.
+fn extract_pdf(path: &Path) -> io::Result<String> {
+    let owned = path.to_path_buf();
+    match std::panic::catch_unwind(move || pdf_extract::extract_text(&owned)) {
+        Ok(Ok(text)) => Ok(text),
+        Ok(Err(e)) => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("pdf extract failed ({}): {e}", path.display()),
+        )),
+        Err(_) => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("pdf extract panicked on malformed PDF ({})", path.display()),
+        )),
+    }
 }
 
 /// Recursively walk `dir` and load every supported document, sorted by path
